@@ -28,18 +28,18 @@ const authLoginController = async (req,res) => {
     const{ error } = schemaLogin.validate(req.body);
     if(error) return res.status(400).json({ error: error.details[0].message })
 
-    const user = await User.findOne({email: req.body.correo});
+    const user = await User.findOne({correo: req.body.correo});
     console.log(user)
     if(!user) return res.status(400).json({ error: true, mensaje: 'Correo no registrado' });
 
-    const passValida = await bcrypt.compare(req.body.password, user.password)
+    const passValida = await bcrypt.compare(req.body.contraseña, user.contraseña)
     if(!passValida) return res.status(400).json({ error: true, mensaje: 'Contraseña incorrecta' });
 
     const token = jwt.sign ({
         nombres: user.nombres,
         apellidos: user.apellidos,
         id: user._id
-    }, process.env.TOKEN_SECRET)
+    }, process.env.TOKEN_SECRET, { expiresIn : "1h"});
 
     res.header('auth-token', token).json({
         error: null,
